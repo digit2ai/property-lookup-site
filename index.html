@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Property Lookup</title>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h2>Lookup Property Info</h2>
+
+  <form onsubmit="getProperty(event)">
+    <input type="text" id="addressInput" placeholder="Enter Address" required />
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="result" style="margin-top:20px;"></div>
+
+  <script>
+    async function getProperty(event) {
+      event.preventDefault();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch('properties.xlsx');
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet);
+
+        const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
+        const match = data.find(row => row.Address?.toLowerCase().includes(addressInput));
+
+        if (match) {
+          const basePrice = 40;
+          const rate = 0.005;
+          const total = basePrice + (rate * parseFloat(match["Lot Size"] || 0));
+
+          resultDiv.innerHTML = `
+            <strong>Address:</strong> ${match.Address}<br>
+            <strong>Lot Size:</strong> ${match["Lot Size"]} sq ft<br>
+            <strong>Owner:</strong> ${match.Owner}<br>
+            <strong>Type:</strong> ${match["Property Type"]}<br>
+            <strong>Estimated Price:</strong> $${total.toFixed(2)}
+          `;
+        } else {
+          resultDiv.innerHTML = "No matching property found.";
+        }
+      } catch (error) {
+        resultDiv.innerHTML = "Error loading Excel file.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
