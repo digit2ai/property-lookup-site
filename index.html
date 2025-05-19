@@ -1,8 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Property Lookup</title>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -26,7 +27,7 @@
       padding: 20px;
       max-width: 500px;
       width: 100%;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .lookup-box h2 {
@@ -101,7 +102,13 @@
   <div class="lookup-box">
     <h2>Get a quick and easy price:</h2>
     <form class="lookup-form" id="lookupForm">
-      <input type="text" id="addressInput" class="lookup-input" placeholder="1234 Main Street..." required />
+      <input
+        type="text"
+        id="addressInput"
+        class="lookup-input"
+        placeholder="1234 Main Street..."
+        required
+      />
       <button type="submit" class="lookup-button">See My Price →</button>
     </form>
     <div class="secure-text">🔒 Your information is secure.</div>
@@ -109,51 +116,55 @@
   </div>
 
   <script>
-    document.getElementById("lookupForm").addEventListener("submit", async function(event) {
+    const chunkUrls = [
+      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk1.json",
+      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk2.json",
+      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk3.json",
+      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk4.json",
+      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk5.json"
+      // Add more chunks here as you upload them
+    ];
+
+    async function loadAllData() {
+      const responses = await Promise.all(
+        chunkUrls.map((url) => fetch(url).then((res) => res.json()))
+      );
+      return responses.flat(); // Merge all data arrays
+    }
+
+    document.getElementById("lookupForm").addEventListener("submit", async function (event) {
       event.preventDefault();
 
       const resultDiv = document.getElementById("result");
-      const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
-
-      if (!addressInput) {
-        resultDiv.innerHTML = "Please enter a valid address.";
-        return;
-      }
+      const input = document.getElementById("addressInput").value.trim().toLowerCase();
 
       resultDiv.innerHTML = "Loading...";
 
       try {
-        const response = await fetch('https://property-lookup-site.onrender.com/properties.xlsx');
-        
-        if (!response.ok) {
-          throw new Error("Failed to load the Excel file. Please try again later.");
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(sheet);
-
-        const match = data.find(row => row.Address?.toLowerCase().includes(addressInput));
+        const data = await loadAllData();
+        const match = data.find(
+          (row) => row.Address && row.Address.toLowerCase().includes(input)
+        );
 
         if (match) {
           const basePrice = 40;
           const rate = 0.005;
-          const total = basePrice + (rate * parseFloat(match["Lot Size"] || 0));
+          const lotSize = parseFloat(match["Lot Size"] || 0);
+          const total = basePrice + rate * lotSize;
 
           resultDiv.innerHTML = `
             <strong>Address:</strong> ${match.Address}<br>
             <strong>Lot Size:</strong> ${match["Lot Size"]} sq ft<br>
             <strong>Owner:</strong> ${match.Owner}<br>
-            <strong>Type:</strong> ${match["Property Type"]}<br>
+            <strong>Type:</strong> ${match.Type}<br>
             <strong>Estimated Price:</strong> $${total.toFixed(2)}
           `;
         } else {
           resultDiv.innerHTML = "No matching property found.";
         }
-      } catch (error) {
-        resultDiv.innerHTML = "An error occurred: " + error.message;
-        console.error("Lookup error:", error);
+      } catch (err) {
+        resultDiv.innerHTML = "Error loading property data.";
+        console.error(err);
       }
     });
   </script>
