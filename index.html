@@ -122,19 +122,29 @@
       "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk3.json",
       "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk4.json",
       "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk5.json"
-      // Add more chunks here as you upload them
     ];
 
     async function loadAllData() {
-      const responses = await Promise.all(
-        chunkUrls.map((url) => fetch(url).then((res) => res.json()))
-      );
-      return responses.flat(); // Merge all data arrays
+      try {
+        const responses = await Promise.all(
+          chunkUrls.map(url =>
+            fetch(url).then(res => {
+              if (!res.ok) {
+                throw new Error(`Failed to load: ${url}`);
+              }
+              return res.json();
+            })
+          )
+        );
+        return responses.flat();
+      } catch (err) {
+        console.error("Error loading property data:", err);
+        throw err;
+      }
     }
 
     document.getElementById("lookupForm").addEventListener("submit", async function (event) {
       event.preventDefault();
-
       const resultDiv = document.getElementById("result");
       const input = document.getElementById("addressInput").value.trim().toLowerCase();
 
@@ -142,6 +152,7 @@
 
       try {
         const data = await loadAllData();
+
         const match = data.find(
           (row) => row.Address && row.Address.toLowerCase().includes(input)
         );
@@ -162,9 +173,8 @@
         } else {
           resultDiv.innerHTML = "No matching property found.";
         }
-      } catch (err) {
-        resultDiv.innerHTML = "Error loading property data.";
-        console.error(err);
+      } catch (error) {
+        resultDiv.innerHTML = "⚠️ Error loading property data. Check console for details.";
       }
     });
   </script>
