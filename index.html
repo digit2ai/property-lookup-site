@@ -75,17 +75,20 @@
       margin-top: 20px;
       padding: 15px;
       border-radius: 8px;
+      word-wrap: break-word;
     }
 
     @media (min-width: 500px) {
       .lookup-form {
         flex-wrap: nowrap;
       }
+
       .lookup-input {
         flex: 1;
         margin-bottom: 0;
         border-radius: 8px 0 0 8px;
       }
+
       .lookup-button {
         width: auto;
         border-radius: 0 8px 8px 0;
@@ -97,7 +100,7 @@
 <body>
   <div class="lookup-box">
     <h2>Get a quick and easy price:</h2>
-    <form class="lookup-form" onsubmit="getProperty(event)">
+    <form class="lookup-form" id="lookupForm">
       <input type="text" id="addressInput" class="lookup-input" placeholder="1234 Main Street..." required />
       <button type="submit" class="lookup-button">See My Price →</button>
     </form>
@@ -106,19 +109,31 @@
   </div>
 
   <script>
-    async function getProperty(event) {
+    document.getElementById("lookupForm").addEventListener("submit", async function(event) {
       event.preventDefault();
+
       const resultDiv = document.getElementById("result");
+      const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
+
+      if (!addressInput) {
+        resultDiv.innerHTML = "Please enter a valid address.";
+        return;
+      }
+
       resultDiv.innerHTML = "Loading...";
 
       try {
         const response = await fetch('https://property-lookup-site.onrender.com/properties.xlsx');
+        
+        if (!response.ok) {
+          throw new Error("Failed to load the Excel file. Please try again later.");
+        }
+
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(sheet);
 
-        const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
         const match = data.find(row => row.Address?.toLowerCase().includes(addressInput));
 
         if (match) {
@@ -137,10 +152,10 @@
           resultDiv.innerHTML = "No matching property found.";
         }
       } catch (error) {
-        resultDiv.innerHTML = "Error loading Excel file.";
-        console.error(error);
+        resultDiv.innerHTML = "An error occurred: " + error.message;
+        console.error("Lookup error:", error);
       }
-    }
+    });
   </script>
 </body>
 </html>
