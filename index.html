@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Property Lookup</title>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -27,7 +26,7 @@
       padding: 20px;
       max-width: 500px;
       width: 100%;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .lookup-box h2 {
@@ -76,20 +75,17 @@
       margin-top: 20px;
       padding: 15px;
       border-radius: 8px;
-      word-wrap: break-word;
     }
 
     @media (min-width: 500px) {
       .lookup-form {
         flex-wrap: nowrap;
       }
-
       .lookup-input {
         flex: 1;
         margin-bottom: 0;
         border-radius: 8px 0 0 8px;
       }
-
       .lookup-button {
         width: auto;
         border-radius: 0 8px 8px 0;
@@ -101,14 +97,8 @@
 <body>
   <div class="lookup-box">
     <h2>Get a quick and easy price:</h2>
-    <form class="lookup-form" id="lookupForm">
-      <input
-        type="text"
-        id="addressInput"
-        class="lookup-input"
-        placeholder="1234 Main Street..."
-        required
-      />
+    <form class="lookup-form" onsubmit="getProperty(event)">
+      <input type="text" id="addressInput" class="lookup-input" placeholder="1234 Main Street..." required />
       <button type="submit" class="lookup-button">See My Price →</button>
     </form>
     <div class="secure-text">🔒 Your information is secure.</div>
@@ -116,67 +106,41 @@
   </div>
 
   <script>
-    const chunkUrls = [
-      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk1.json",
-      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk2.json",
-      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk3.json",
-      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk4.json",
-      "https://raw.githubusercontent.com/digit2ai/property-data/main/properties_chunk5.json"
-    ];
-
-    async function loadAllData() {
-      try {
-        const responses = await Promise.all(
-          chunkUrls.map(url =>
-            fetch(url).then(res => {
-              if (!res.ok) {
-                throw new Error(`Failed to load: ${url}`);
-              }
-              return res.json();
-            })
-          )
-        );
-        return responses.flat();
-      } catch (err) {
-        console.error("Error loading property data:", err);
-        throw err;
-      }
-    }
-
-    document.getElementById("lookupForm").addEventListener("submit", async function (event) {
+    async function getProperty(event) {
       event.preventDefault();
       const resultDiv = document.getElementById("result");
-      const input = document.getElementById("addressInput").value.trim().toLowerCase();
-
       resultDiv.innerHTML = "Loading...";
 
       try {
-        const data = await loadAllData();
+        const response = await fetch('https://property-lookup-site.onrender.com/properties.xlsx');
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet);
 
-        const match = data.find(
-          (row) => row.Address && row.Address.toLowerCase().includes(input)
-        );
+        const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
+        const match = data.find(row => row.Address?.toLowerCase().includes(addressInput));
 
         if (match) {
           const basePrice = 40;
           const rate = 0.005;
-          const lotSize = parseFloat(match["Lot Size"] || 0);
-          const total = basePrice + rate * lotSize;
+          const total = basePrice + (rate * parseFloat(match["Lot Size"] || 0));
 
           resultDiv.innerHTML = `
             <strong>Address:</strong> ${match.Address}<br>
             <strong>Lot Size:</strong> ${match["Lot Size"]} sq ft<br>
             <strong>Owner:</strong> ${match.Owner}<br>
-            <strong>Type:</strong> ${match.Type}<br>
+            <strong>Type:</strong> ${match["Property Type"]}<br>
             <strong>Estimated Price:</strong> $${total.toFixed(2)}
           `;
         } else {
           resultDiv.innerHTML = "No matching property found.";
         }
       } catch (error) {
-        resultDiv.innerHTML = "⚠️ Error loading property data. Check console for details.";
+        resultDiv.innerHTML = "Error loading Excel file.";
+        console.error(error);
       }
-    });
+    }
   </script>
 </body>
 </html>
