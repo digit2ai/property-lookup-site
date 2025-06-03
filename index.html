@@ -140,6 +140,29 @@
         console.error(error);
       }
     }
+
+    function initAutocomplete() {
+      const input = document.getElementById("addressInput");
+
+      const autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['address'],
+        componentRestrictions: { country: "us" }
+      });
+
+      const tampaBounds = {
+        north: 28.3,
+        south: 27.7,
+        east: -82.2,
+        west: -82.6
+      };
+
+      autocomplete.setBounds(tampaBounds);
+      autocomplete.setOptions({ strictBounds: false });
+    }
+  </script>
+
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
   </script>
 </body>
 </html>
