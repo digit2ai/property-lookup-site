@@ -1,12 +1,11 @@
+<!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Property Lookup</title>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: sans-serif;
@@ -111,35 +110,48 @@
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "Loading...";
 
-      try {
-        const response = await fetch('https://property-lookup-site.onrender.com/properties.xlsx');
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(sheet);
+      const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
 
-        const addressInput = document.getElementById("addressInput").value.trim().toLowerCase();
-        const match = data.find(row => row.Address?.toLowerCase().includes(addressInput));
+      const trySources = [
+        'https://geo.lawn2ai.com/properties.xlsx', // subdomain (if you host it here)
+        'https://property-lookup-site.onrender.com/properties.xlsx' // fallback
+      ];
 
-        if (match) {
-          const basePrice = 40;
-          const rate = 0.005;
-          const total = basePrice + (rate * parseFloat(match["Lot Size"] || 0));
+      for (const url of trySources) {
+        try {
+          console.log("Trying to fetch:", url);
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-          resultDiv.innerHTML = `
-            <strong>Address:</strong> ${match.Address}<br>
-            <strong>Lot Size:</strong> ${match["Lot Size"]} sq ft<br>
-            <strong>Owner:</strong> ${match.Owner}<br>
-            <strong>Type:</strong> ${match["Property Type"]}<br>
-            <strong>Estimated Price:</strong> $${total.toFixed(2)}
-          `;
-        } else {
-          resultDiv.innerHTML = "No matching property found.";
+          const arrayBuffer = await response.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const data = XLSX.utils.sheet_to_json(sheet);
+
+          const match = data.find(row => row.Address?.toLowerCase().includes(addressInput));
+          if (match) {
+            const basePrice = 40;
+            const rate = 0.005;
+            const total = basePrice + (rate * parseFloat(match["Lot Size"] || 0));
+
+            resultDiv.innerHTML = `
+              <strong>Address:</strong> ${match.Address}<br>
+              <strong>Lot Size:</strong> ${match["Lot Size"]} sq ft<br>
+              <strong>Owner:</strong> ${match.Owner}<br>
+              <strong>Type:</strong> ${match["Property Type"]}<br>
+              <strong>Estimated Price:</strong> $${total.toFixed(2)}
+            `;
+          } else {
+            resultDiv.innerHTML = "No matching property found.";
+          }
+          return; // stop after successful fetch
+        } catch (error) {
+          console.warn("Fetch failed for", url, error);
+          // Try next source
         }
-      } catch (error) {
-        resultDiv.innerHTML = "Error loading Excel file.";
-        console.error(error);
       }
+
+      resultDiv.innerHTML = "Failed to load property data. Please try again later.";
     }
   </script>
 </body>
