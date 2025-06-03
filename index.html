@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Property Lookup</title>
+  <title>Property Lookup & Booking</title>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <style>
@@ -135,7 +135,6 @@
         });
 
         const results = fuse.search(userInput);
-
         const filtered = results.filter(r => {
           const matchHouse = extractHouseNumber(r.item.Address);
           return matchHouse === inputHouse;
@@ -147,14 +146,42 @@
           const basePrice = 40;
           const rate = 0.005;
           const total = basePrice + (rate * parseFloat(finalResult["Lot Size"] || 0));
+          const totalFormatted = total.toFixed(2);
 
           resultDiv.innerHTML = `
             <strong>Address:</strong> ${finalResult.Address}<br>
             <strong>Lot Size:</strong> ${finalResult["Lot Size"]} sq ft<br>
             <strong>Owner:</strong> ${finalResult.Owner}<br>
             <strong>Type:</strong> ${finalResult.Type}<br>
-            <strong>Estimated Price:</strong> $${total.toFixed(2)}
+            <strong>Estimated Price:</strong> $${totalFormatted}<br><br>
+
+            <form id="bookingForm" style="margin-top: 20px;">
+              <input type="hidden" name="address" value="${finalResult.Address}" />
+              <input type="hidden" name="price" value="${totalFormatted}" />
+
+              <input type="text" name="name" placeholder="Your Name" required style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #ccc;" />
+              <input type="tel" name="phone" placeholder="Your Phone" required style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #ccc;" />
+              <input type="email" name="email" placeholder="Your Email" required style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #ccc;" />
+              <input type="date" name="date" required style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #ccc;" />
+
+              <button type="submit" style="background: #f4b400; color: #000; padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; width: 100%;">
+                Book Now
+              </button>
+            </form>
+            <div id="bookingMessage" style="margin-top: 10px; color: white;"></div>
           `;
+
+          document.getElementById("bookingForm").onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Replace this with actual integration logic
+            console.log("📩 Booking request submitted:", data);
+
+            document.getElementById("bookingMessage").innerHTML = "✅ Booking request sent! We'll contact you soon.";
+            e.target.reset();
+          };
         } else {
           resultDiv.innerHTML = "No matching property found.";
         }
