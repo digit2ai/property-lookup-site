@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Property Lookup</title>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <style>
     * { box-sizing: border-box; }
 
@@ -105,22 +106,6 @@
   </div>
 
   <script>
-    function normalizeAddress(str) {
-      return (str || "")
-        .toLowerCase()
-        .replace(/,\s*\b(?:tampa|fl|usa)\b/gi, '')
-        .replace(/[^\w\s]/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    function getSimilarity(a, b) {
-      const wordsA = new Set(a.split(' '));
-      const wordsB = new Set(b.split(' '));
-      const common = [...wordsA].filter(w => wordsB.has(w));
-      return common.length / Math.max(wordsA.size, wordsB.size);
-    }
-
     async function getProperty(event) {
       event.preventDefault();
       const resultDiv = document.getElementById("result");
@@ -133,30 +118,29 @@
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(sheet);
 
-        const input = normalizeAddress(document.getElementById("addressInput").value);
-        let bestMatch = null;
-        let bestScore = 0;
+        const userInput = document.getElementById("addressInput").value;
 
-        for (const row of data) {
-          const excelAddress = normalizeAddress(row.Address);
-          const score = getSimilarity(input, excelAddress);
+        // Fuzzy search with Fuse.js
+        const fuse = new Fuse(data, {
+          keys: ['Address'],
+          threshold: 0.4,        // lower is stricter
+          distance: 100,         // more tolerant to gaps
+          ignoreLocation: true,
+          includeScore: true,
+        });
 
-          if (score > bestScore) {
-            bestScore = score;
-            bestMatch = row;
-          }
-        }
-
-        if (bestMatch && bestScore >= 0.6) {
+        const results = fuse.search(userInput);
+        if (results.length > 0) {
+          const match = results[0].item;
           const basePrice = 40;
           const rate = 0.005;
-          const total = basePrice + (rate * parseFloat(bestMatch["Lot Size"] || 0));
+          const total = basePrice + (rate * parseFloat(match["Lot Size"] || 0));
 
           resultDiv.innerHTML = `
-            <strong>Address:</strong> ${bestMatch.Address}<br>
-            <strong>Lot Size:</strong> ${bestMatch["Lot Size"]} sq ft<br>
-            <strong>Owner:</strong> ${bestMatch.Owner}<br>
-            <strong>Type:</strong> ${bestMatch["Property Type"]}<br>
+            <strong>Address:</strong> ${match.Address}<br>
+            <strong>Lot Size:</strong> ${match["Lot Size"]} sq ft<br>
+            <strong>Owner:</strong> ${match.Owner}<br>
+            <strong>Type:</strong> ${match.Type}<br>
             <strong>Estimated Price:</strong> $${total.toFixed(2)}
           `;
         } else {
@@ -170,7 +154,6 @@
 
     function initAutocomplete() {
       const input = document.getElementById("addressInput");
-
       const autocomplete = new google.maps.places.Autocomplete(input, {
         types: ['address'],
         componentRestrictions: { country: "us" }
