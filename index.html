@@ -47,13 +47,13 @@
     }
 
     .lookup-input {
-      flex: 1;
+      flex: 1 1 100%;
       padding: 12px;
       border: none;
-      border-radius: 8px 0 0 8px;
+      border-radius: 8px;
       font-size: 16px;
       color: #333;
-      min-width: 0;
+      margin-bottom: 8px;
     }
 
     .lookup-button {
@@ -61,10 +61,11 @@
       color: #000;
       padding: 12px 20px;
       border: none;
-      border-radius: 0 8px 8px 0;
+      border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
       white-space: nowrap;
+      width: 100%;
     }
 
     .secure-text {
@@ -82,16 +83,35 @@
       border-radius: 8px;
     }
 
+    @media (min-width: 500px) {
+      .lookup-form {
+        flex-wrap: nowrap;
+      }
+
+      #step2-form {
+        flex-direction: column;
+      }
+
+      .lookup-input {
+        border-radius: 8px;
+      }
+
+      .lookup-form input[type="text"],
+      .lookup-form input[type="email"],
+      .lookup-form input[type="tel"] {
+        width: 100%;
+      }
+    }
+
     @media (max-width: 500px) {
       .lookup-form {
         flex-direction: column;
       }
 
-      .lookup-input,
       .lookup-button {
+        width: 100%;
         border-radius: 8px;
         margin-bottom: 10px;
-        width: 100%;
       }
     }
   </style>
