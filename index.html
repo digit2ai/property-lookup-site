@@ -41,19 +41,17 @@
 
     .lookup-form {
       display: flex;
-      flex-wrap: nowrap;
+      flex-direction: column;
       margin-top: 10px;
-      gap: 0;
     }
 
     .lookup-input {
-      flex: 1 1 100%;
       padding: 12px;
       border: none;
       border-radius: 8px;
       font-size: 16px;
       color: #333;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .lookup-button {
@@ -82,38 +80,6 @@
       padding: 15px;
       border-radius: 8px;
     }
-
-    @media (min-width: 500px) {
-      .lookup-form {
-        flex-wrap: nowrap;
-      }
-
-      #step2-form {
-        flex-direction: column;
-      }
-
-      .lookup-input {
-        border-radius: 8px;
-      }
-
-      .lookup-form input[type="text"],
-      .lookup-form input[type="email"],
-      .lookup-form input[type="tel"] {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .lookup-form {
-        flex-direction: column;
-      }
-
-      .lookup-button {
-        width: 100%;
-        border-radius: 8px;
-        margin-bottom: 10px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -127,7 +93,7 @@
     </form>
 
     <!-- Step 2: Contact Info -->
-    <form id="step2-form" class="lookup-form" onsubmit="getProperty(event)" style="display: none; flex-direction: column; margin-top: 10px;">
+    <form id="step2-form" class="lookup-form" onsubmit="getProperty(event)" style="display: none; margin-top: 10px;">
       <input type="text" id="fullName" class="lookup-input" placeholder="Full Name (optional)" />
       <input type="email" id="email" class="lookup-input" placeholder="Email Address (optional)" />
       <input type="tel" id="phone" class="lookup-input" placeholder="Phone Number (required)" required />
