@@ -80,14 +80,6 @@
       padding: 15px;
       border-radius: 8px;
     }
-
-    #geoError {
-      display: none;
-      color: red;
-      font-size: 13px;
-      margin-top: 10px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -108,7 +100,6 @@
 
     <div class="secure-text">🔒 We keep your info safe and private.</div>
     <div id="result"></div>
-    <div id="geoError">⚠️ Location access is required. Please enable it in your browser settings.</div>
   </div>
 
   <script>
@@ -124,7 +115,6 @@
 
     async function sendEmail({ fullName, email, phone }) {
       try {
-        const address = sessionStorage.getItem("selectedAddress") || "(not provided)";
         const res = await fetch("https://formspree.io/f/xblylokk", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -132,7 +122,7 @@
             fullName,
             email,
             phone,
-            message: `New Quote Lead\n\nName: ${fullName}\nEmail: ${email}\nPhone: ${phone}\nAddress: ${address}`
+            message: `New Quote Lead\n\nName: ${fullName}\nEmail: ${email}\nPhone: ${phone}`
           }),
         });
         if (!res.ok) throw new Error("Email send failed");
@@ -150,9 +140,7 @@
     async function getProperty(event) {
       event.preventDefault();
       const resultDiv = document.getElementById("result");
-      const geoErrorDiv = document.getElementById("geoError");
-      resultDiv.innerHTML = "📍 Initiating geolocation and real-time quote calculation. Please allow up to 30 seconds...";
-      geoErrorDiv.style.display = "none";
+      resultDiv.innerHTML = "Initiating geolocation and real-time quote calculation. Please allow up to 30 seconds....";
 
       const fullName = document.getElementById("fullName").value.trim();
       const email = document.getElementById("email").value.trim();
@@ -160,74 +148,64 @@
 
       await sendEmail({ fullName, email, phone });
 
-      if (!navigator.geolocation) {
-        resultDiv.innerHTML = "Geolocation not supported by this browser.";
-        return;
-      }
+      try {
+        const response = await fetch('https://raw.githubusercontent.com/digit2ai/property-lookup-site/main/properties.json.gz');
+        const compressed = new Uint8Array(await response.arrayBuffer());
+        const decompressed = new TextDecoder().decode(pako.ungzip(compressed));
+        const data = JSON.parse(decompressed);
 
-      navigator.geolocation.getCurrentPosition(async () => {
-        try {
-          const response = await fetch('https://raw.githubusercontent.com/digit2ai/property-lookup-site/main/properties.json.gz');
-          const compressed = new Uint8Array(await response.arrayBuffer());
-          const decompressed = new TextDecoder().decode(pako.ungzip(compressed));
-          const data = JSON.parse(decompressed);
+        const userInput = sessionStorage.getItem("selectedAddress") || "";
+        const inputHouse = extractHouseNumber(userInput);
 
-          const userInput = sessionStorage.getItem("selectedAddress") || "";
-          const inputHouse = extractHouseNumber(userInput);
+        const fuse = new Fuse(data, {
+          keys: ['Address'],
+          threshold: 0.4,
+          distance: 100,
+          ignoreLocation: true,
+          includeScore: true,
+        });
 
-          const fuse = new Fuse(data, {
-            keys: ['Address'],
-            threshold: 0.4,
-            distance: 100,
-            ignoreLocation: true,
-            includeScore: true,
-          });
-
-          const results = fuse.search(userInput);
-          let finalResult = null;
-          for (const r of results) {
-            const house = extractHouseNumber(r.item.Address || "");
-            if (house === inputHouse) {
-              finalResult = r.item;
-              break;
-            }
+        const results = fuse.search(userInput);
+        let finalResult = null;
+        for (const r of results) {
+          const house = extractHouseNumber(r.item.Address || "");
+          if (house === inputHouse) {
+            finalResult = r.item;
+            break;
           }
-
-          if (!finalResult && results.length > 0) {
-            finalResult = results[0].item;
-          }
-
-          if (finalResult) {
-            const basePrice = 40;
-            const rate = 0.005;
-            const total = basePrice + (rate * parseFloat(finalResult["Lot Size"] || 0));
-            const totalFormatted = total.toFixed(2);
-
-            const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(finalResult.Address)}&zoom=17&size=400x200&maptype=satellite&markers=color:red%7C${encodeURIComponent(finalResult.Address)}&key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg`;
-
-            resultDiv.innerHTML = `
-              <strong>Address:</strong> ${finalResult.Address}<br>
-              <strong>Lot Size:</strong> ${finalResult["Lot Size"]} sq ft<br>
-              <strong>Owner:</strong> ${finalResult.Owner}<br>
-              <strong>Type:</strong> ${finalResult.Type}<br>
-              <strong>Estimated Price:</strong> $${totalFormatted}<br><br>
-              <img src="${staticMapUrl}" alt="Map of property" style="width: 100%; border-radius: 6px; margin-bottom: 15px;" />
-              <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')" 
-                      style="background: #f4b400; color: #000; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                Book This Service →
-              </button>
-            `;
-          } else {
-            resultDiv.innerHTML = "No matching property found.";
-          }
-        } catch (error) {
-          resultDiv.innerHTML = "Error loading property data.";
-          console.error(error);
         }
-      }, (error) => {
-        geoErrorDiv.style.display = "block";
-        console.error("Geolocation error:", error);
-      });
+
+        if (!finalResult && results.length > 0) {
+          finalResult = results[0].item;
+        }
+
+        if (finalResult) {
+          const basePrice = 40;
+          const rate = 0.005;
+          const total = basePrice + (rate * parseFloat(finalResult["Lot Size"] || 0));
+          const totalFormatted = total.toFixed(2);
+
+          const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(finalResult.Address)}&zoom=17&size=400x200&maptype=satellite&markers=color:red%7C${encodeURIComponent(finalResult.Address)}&key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg`;
+
+          resultDiv.innerHTML = `
+            <strong>Address:</strong> ${finalResult.Address}<br>
+            <strong>Lot Size:</strong> ${finalResult["Lot Size"]} sq ft<br>
+            <strong>Owner:</strong> ${finalResult.Owner}<br>
+            <strong>Type:</strong> ${finalResult.Type}<br>
+            <strong>Estimated Price:</strong> $${totalFormatted}<br><br>
+            <img src="${staticMapUrl}" alt="Map of property" style="width: 100%; border-radius: 6px; margin-bottom: 15px;" />
+            <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')"
+                    style="background: #f4b400; color: #000; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+              Book This Service →
+            </button>
+          `;
+        } else {
+          resultDiv.innerHTML = "No matching property found.";
+        }
+      } catch (error) {
+        resultDiv.innerHTML = "Error loading property data.";
+        console.error(error);
+      }
     }
 
     function initAutocomplete() {
