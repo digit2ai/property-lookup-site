@@ -122,8 +122,8 @@
 
           document.getElementById("result").innerHTML = `
             📍 <strong>Address:</strong> ${results[0].formatted_address}<br><br>
-            ✅ <strong>Instructions:</strong> Use the polygon tool in the corner of the map to draw your lawn. 
-            Once done, we’ll calculate the square footage and give you an instant price.
+            ✅ <strong>Instructions:</strong> Tap the <strong>polygon tool</strong> in the top center of the map, then tap to draw your lawn. 
+            Double-tap to close the shape. We’ll instantly calculate square footage and give you a quote.
           `;
         } else {
           document.getElementById("result").innerHTML = "❌ Geocoding failed. Try a different address.";
@@ -132,8 +132,12 @@
     }
 
     function initDrawingManager() {
+      if (drawingManager) {
+        drawingManager.setMap(null); // Clear previous manager
+      }
+
       drawingManager = new google.maps.drawing.DrawingManager({
-        drawingMode: google.maps.drawing.OverlayType.POLYGON,
+        drawingMode: null,
         drawingControl: true,
         drawingControlOptions: {
           position: google.maps.ControlPosition.TOP_CENTER,
@@ -166,6 +170,7 @@
     }
   </script>
 
+  <!-- ✅ Load Google Maps API with required libraries -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
