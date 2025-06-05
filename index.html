@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimate Property Area</title>
+  <title>Estimate Property Size</title>
   <meta name="theme-color" content="#343434">
   <style>
     body {
       font-family: sans-serif;
-      background: #f1f1f1;
+      background: #1a1a1a;
       margin: 0;
       padding: 20px;
     }
@@ -20,7 +20,7 @@
       padding: 20px;
       max-width: 500px;
       margin: 0 auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     .lookup-input, .lookup-button {
@@ -40,6 +40,7 @@
       background-color: #f4b400;
       color: #000;
       cursor: pointer;
+      font-weight: bold;
     }
 
     #map {
@@ -64,7 +65,7 @@
     <h2>Estimate Property Size</h2>
 
     <form onsubmit="startMap(event)">
-      <input type="search" id="addressInput" class="lookup-input" placeholder="1234 Main Street..." required autocomplete="off" />
+      <input type="search" id="addressInput" class="lookup-input" placeholder="1234 Main Street, City, State" required autocomplete="off" />
       <button type="submit" class="lookup-button">Find and Draw →</button>
     </form>
 
@@ -77,9 +78,10 @@
 
     function startMap(event) {
       event.preventDefault();
-      const address = document.getElementById("addressInput").value.trim();
+      const rawAddress = document.getElementById("addressInput").value.trim();
+      const cleanedAddress = rawAddress.replace(/[^a-zA-Z0-9\s,]/g, "").trim(); // Removes special characters
       document.getElementById("map").style.display = "block";
-      geocodeAddress(address);
+      geocodeAddress(cleanedAddress);
     }
 
     function geocodeAddress(address) {
@@ -88,6 +90,10 @@
       fetch(geocodeUrl)
         .then(res => res.json())
         .then(data => {
+          if (!data.results || data.results.length === 0) {
+            throw new Error("No results found");
+          }
+
           const location = data.results[0].geometry.location;
           map = new google.maps.Map(document.getElementById("map"), {
             center: location,
@@ -98,8 +104,8 @@
           initDrawingManager();
         })
         .catch(err => {
-          document.getElementById("result").innerText = "❌ Failed to find address.";
-          console.error(err);
+          document.getElementById("result").innerHTML = `❌ <strong>Failed to find address:</strong> ${address}`;
+          console.error("Geocode error:", err);
         });
     }
 
@@ -131,10 +137,16 @@
         types: ['address'],
         componentRestrictions: { country: "us" }
       });
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (place.formatted_address) {
+          input.value = place.formatted_address;
+        }
+      });
     }
   </script>
 
-  <!-- ✅ Google Maps API (your working key and all required libraries) -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
