@@ -83,6 +83,12 @@
       border-radius: 8px;
       display: none;
     }
+
+    input::-webkit-contacts-auto-fill-button,
+    input::-webkit-credentials-auto-fill-button {
+      visibility: hidden;
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +96,15 @@
     <h2>Instant Quote in Seconds</h2>
 
     <form id="step1-form" class="lookup-form" onsubmit="handleAddressSubmit(event)">
-      <input type="text" id="addressInput" class="lookup-input" placeholder="1234 Main Street..." required autocomplete="off" />
+      <input 
+        type="search" 
+        id="addressInput" 
+        class="lookup-input" 
+        placeholder="1234 Main Street..." 
+        required 
+        autocomplete="off" 
+        spellcheck="false"
+      />
       <button type="submit" class="lookup-button">Next →</button>
     </form>
 
@@ -121,7 +135,7 @@
     }
 
     function geocodeAddressAndInitMap(address) {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=YOUR_GOOGLE_API_KEY`;
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg`;
 
       fetch(geocodeUrl)
         .then(response => response.json())
@@ -226,7 +240,7 @@
           const total = basePrice + (rate * parseFloat(finalResult["Lot Size"] || 0));
           const totalFormatted = total.toFixed(2);
 
-          const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(finalResult.Address)}&zoom=17&size=400x200&maptype=satellite&markers=color:red%7C${encodeURIComponent(finalResult.Address)}&key=YOUR_GOOGLE_API_KEY`;
+          const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(finalResult.Address)}&zoom=17&size=400x200&maptype=satellite&markers=color:red%7C${encodeURIComponent(finalResult.Address)}&key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg`;
 
           resultDiv.innerHTML = `
             <strong>Address:</strong> ${finalResult.Address}<br>
@@ -253,18 +267,15 @@
       const input = document.getElementById("addressInput");
       const autocomplete = new google.maps.places.Autocomplete(input, {
         types: ['address'],
-        componentRestrictions: { country: "us" }
+        componentRestrictions: { country: "us" },
+        fields: ["formatted_address", "geometry"]
       });
 
-      const tampaBounds = {
-        north: 28.3,
-        south: 27.7,
-        east: -82.2,
-        west: -82.6
-      };
-
-      autocomplete.setBounds(tampaBounds);
-      autocomplete.setOptions({ strictBounds: false });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+        }
+      });
     }
 
     if ('serviceWorker' in navigator) {
@@ -274,8 +285,9 @@
     }
   </script>
 
+  <!-- ✅ FINAL WORKING GOOGLE MAPS API SCRIPT -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places,geometry,drawing&callback=initAutocomplete">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
 </body>
 </html>
