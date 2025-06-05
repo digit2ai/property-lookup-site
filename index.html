@@ -203,16 +203,25 @@
       });
     }
 
-    // 💡 Tutorial functions
     function showTutorial() {
-      if (localStorage.getItem("tutorialDismissed") !== "yes") {
-        document.getElementById("tutorialOverlay").style.display = "flex";
+      try {
+        const skipped = localStorage.getItem("tutorialDismissed");
+        if (!skipped || skipped !== "yes") {
+          document.getElementById("tutorialOverlay").style.display = "flex";
+        }
+      } catch (e) {
+        console.warn("Unable to access localStorage.", e);
       }
     }
 
     function hideTutorial() {
-      document.getElementById("tutorialOverlay").style.display = "none";
-      localStorage.setItem("tutorialDismissed", "yes");
+      try {
+        localStorage.setItem("tutorialDismissed", "yes");
+        document.getElementById("tutorialOverlay").style.display = "none";
+      } catch (e) {
+        console.warn("Unable to access localStorage.", e);
+        document.getElementById("tutorialOverlay").style.display = "none";
+      }
     }
   </script>
 
