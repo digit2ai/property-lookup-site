@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimate Lawn Quote</title>
+  <title>Instant Lawn Quote</title>
   <meta name="theme-color" content="#343434">
   <style>
     body {
       font-family: sans-serif;
-      background: #f1f1f1;
+      background: #1a8f4d;
       margin: 0;
       padding: 20px;
     }
@@ -20,7 +20,7 @@
       padding: 20px;
       max-width: 500px;
       margin: 0 auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     .lookup-input, .lookup-button {
@@ -119,9 +119,11 @@
           });
 
           initDrawingManager();
+
           document.getElementById("result").innerHTML = `
-            📍 <strong>Address:</strong> ${results[0].formatted_address}<br>
-            ✅ Map loaded — please draw your lawn area to estimate pricing.
+            📍 <strong>Address:</strong> ${results[0].formatted_address}<br><br>
+            ✅ <strong>Instructions:</strong> Use the polygon tool in the corner of the map to draw your lawn. 
+            Once done, we’ll calculate the square footage and give you an instant price.
           `;
         } else {
           document.getElementById("result").innerHTML = "❌ Geocoding failed. Try a different address.";
@@ -151,19 +153,19 @@
         const totalPrice = basePrice + areaSqFt * ratePerSqFt;
 
         document.getElementById("result").innerHTML += `
-          <br><br>
-          🧱 <strong>Drawn Area:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
-          💵 <strong>Estimated Price:</strong> $${totalPrice.toFixed(2)}<br><br>
-          <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')"
-                  style="background: #f4b400; color: #000; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            Book This Service →
-          </button>
+          <div style="background: #fff9e6; padding: 12px; border-radius: 8px; border: 1px solid #f4b400; margin-top: 15px;">
+            🧱 <strong>Lawn Size:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
+            💵 <strong>Your Price:</strong> <span style="font-size: 18px; color: #27ae60;">$${totalPrice.toFixed(2)}</span><br><br>
+            <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')"
+                    style="background: #f4b400; color: #000; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+              ✅ Book This Lawn Service →
+            </button>
+          </div>
         `;
       });
     }
   </script>
 
-  <!-- ✅ Load Google Maps API with required libraries -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
