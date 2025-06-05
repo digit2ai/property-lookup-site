@@ -7,8 +7,8 @@
   <meta name="theme-color" content="#343434">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/icon-192.png">
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <style>
     * { box-sizing: border-box; }
 
@@ -86,13 +86,11 @@
   <div class="lookup-box">
     <h2>Instant Quote in Seconds</h2>
 
-    <!-- Step 1: Address -->
     <form id="step1-form" class="lookup-form" onsubmit="handleAddressSubmit(event)">
       <input type="text" id="addressInput" class="lookup-input" placeholder="1234 Main Street..." required autocomplete="off" />
       <button type="submit" class="lookup-button">Next →</button>
     </form>
 
-    <!-- Step 2: Contact Info -->
     <form id="step2-form" class="lookup-form" onsubmit="getProperty(event)" style="display: none; margin-top: 10px;">
       <input type="text" id="fullName" class="lookup-input" placeholder="Full Name (optional)" />
       <input type="email" id="email" class="lookup-input" placeholder="Email Address (optional)" />
@@ -151,11 +149,10 @@
       await sendEmail({ fullName, email, phone });
 
       try {
-        const response = await fetch('https://geo.lawn2ai.com/properties.xlsx');
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(sheet);
+        const response = await fetch('https://raw.githubusercontent.com/digit2ai/property-lookup-site/main/properties.json.gz');
+        const compressed = new Uint8Array(await response.arrayBuffer());
+        const decompressed = new TextDecoder().decode(pako.ungzip(compressed));
+        const data = JSON.parse(decompressed);
 
         const userInput = sessionStorage.getItem("selectedAddress") || "";
         const inputHouse = extractHouseNumber(userInput);
