@@ -64,7 +64,7 @@
       top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       color: white;
       display: none;
       justify-content: center;
@@ -95,16 +95,19 @@
     <div id="map"></div>
   </div>
 
-  <!-- 📘 Tutorial Overlay (VISUAL STEPS) -->
+  <!-- 🎥 Tutorial Overlay with Video -->
   <div id="tutorialOverlay">
     <h2 style="margin-bottom: 20px;">🎯 How to Get Your Instant Lawn Quote</h2>
-
-    <div style="max-width: 420px; display: flex; flex-direction: column; gap: 20px; font-size: 16px; line-height: 1.6; text-align: left;">
-      <div>🔲 <strong>Step 1:</strong> Tap the <strong>Polygon Tool</strong> at the top of the map.</div>
-      <div>📍 <strong>Step 2:</strong> Tap points around your lawn to draw the area.</div>
-      <div>✅ <strong>Step 3:</strong> Close the shape. You’ll get an instant square footage & price.</div>
+    <div style="max-width: 90%; max-width: 560px;">
+      <iframe width="100%" height="315"
+        src="https://www.youtube.com/embed/cNzmciDoQtk?autoplay=1&mute=1&rel=0"
+        title="How to Draw Your Lawn Area"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        style="border-radius: 10px;">
+      </iframe>
     </div>
-
     <button onclick="hideTutorial()" style="margin-top: 30px; padding: 12px 20px; font-size: 16px; border-radius: 6px; background: #f4b400; color: black; border: none; font-weight: bold;">
       Got it — Let's Start Drawing →
     </button>
@@ -200,7 +203,6 @@
       });
     }
 
-    // 💡 Tutorial functions
     function showTutorial() {
       if (!sessionStorage.getItem("tutorialSeen")) {
         document.getElementById("tutorialOverlay").style.display = "flex";
@@ -213,7 +215,6 @@
     }
   </script>
 
-  <!-- ✅ Load Google Maps API with drawing tools -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
