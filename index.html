@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Estimate Property Size</title>
-  <meta name="theme-color" content="#343434">
+  <meta name="theme-color" content="#343434" />
   <style>
     body {
       font-family: sans-serif;
@@ -64,37 +64,51 @@
   <div class="lookup-box">
     <h2>Estimate Property Size</h2>
 
-    <form onsubmit="startMap(event)">
-      <input type="search" id="addressInput" class="lookup-input" placeholder="1234 Main Street, City, State" required autocomplete="off" />
-      <button type="submit" class="lookup-button">Find and Draw →</button>
-    </form>
+    <input 
+      type="search" 
+      id="addressInput" 
+      class="lookup-input" 
+      placeholder="1234 Main Street, City, State" 
+      required 
+      autocomplete="off" 
+    />
+
+    <button onclick="findPlace()" class="lookup-button">Find and Draw →</button>
 
     <div id="result"></div>
     <div id="map"></div>
   </div>
 
   <script>
-    let map, drawingManager;
+    let map, drawingManager, selectedPlaceId = null;
 
-    function startMap(event) {
-      event.preventDefault();
-      const rawAddress = document.getElementById("addressInput").value.trim();
-      const cleanedAddress = rawAddress.replace(/[^a-zA-Z0-9\s,]/g, "").trim(); // Removes special characters
-      document.getElementById("map").style.display = "block";
-      geocodeAddress(cleanedAddress);
+    function initAutocomplete() {
+      const input = document.getElementById("addressInput");
+      const autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['address'],
+        componentRestrictions: { country: "us" }
+      });
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (place.place_id) {
+          selectedPlaceId = place.place_id;
+        }
+      });
     }
 
-    function geocodeAddress(address) {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg`;
+    function findPlace() {
+      if (!selectedPlaceId) {
+        document.getElementById("result").innerHTML = "❌ Please select a valid address from the dropdown.";
+        return;
+      }
 
-      fetch(geocodeUrl)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.results || data.results.length === 0) {
-            throw new Error("No results found");
-          }
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ placeId: selectedPlaceId }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const location = results[0].geometry.location;
+          document.getElementById("map").style.display = "block";
 
-          const location = data.results[0].geometry.location;
           map = new google.maps.Map(document.getElementById("map"), {
             center: location,
             zoom: 18,
@@ -102,11 +116,10 @@
           });
 
           initDrawingManager();
-        })
-        .catch(err => {
-          document.getElementById("result").innerHTML = `❌ <strong>Failed to find address:</strong> ${address}`;
-          console.error("Geocode error:", err);
-        });
+        } else {
+          document.getElementById("result").innerHTML = "❌ Geocoding failed. Try a different address.";
+        }
+      });
     }
 
     function initDrawingManager() {
@@ -130,25 +143,12 @@
         `;
       });
     }
-
-    function initAutocomplete() {
-      const input = document.getElementById("addressInput");
-      const autocomplete = new google.maps.places.Autocomplete(input, {
-        types: ['address'],
-        componentRestrictions: { country: "us" }
-      });
-
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        if (place.formatted_address) {
-          input.value = place.formatted_address;
-        }
-      });
-    }
   </script>
 
+  <!-- ✅ Your actual API key + required libraries -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
 </body>
 </html>
+
