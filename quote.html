@@ -9,13 +9,33 @@
       font-family: sans-serif;
       margin: 0;
       padding: 20px;
-      background: #f1f1f1;
+      background: #064d2e; /* Dark green */
     }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .logo-container img {
+      max-width: 180px;
+      height: auto;
+    }
+
+    h2 {
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 0;
+    }
+
     #map {
       width: 100%;
       height: 500px;
       border-radius: 10px;
+      margin-top: 20px;
     }
+
     #result {
       margin-top: 20px;
       background: white;
@@ -23,10 +43,27 @@
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
+
+    button {
+      background: #f4b400;
+      color: black;
+      padding: 10px 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Logo and Title -->
+  <div class="logo-container">
+    <img src="https://assets.cdn.filesafe.space/SEMmeWOBlogS8eeis0N9/media/683b4704f3de4405c33ffdb7.png" alt="Logo" />
+  </div>
   <h2>Interactive Lawn Quote</h2>
+
+  <!-- Map and Quote Result -->
   <div id="map"></div>
   <div id="result">🧭 Loading map...</div>
 
@@ -78,8 +115,7 @@
               <strong>📍 Address:</strong> ${results[0].formatted_address}<br>
               <strong>🧱 Lawn Size:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
               <strong>💵 Estimated Price:</strong> $${totalPrice.toFixed(2)}<br><br>
-              <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')"
-                      style="background: #f4b400; color: black; padding: 10px 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">
+              <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')">
                 ✅ Book This Lawn Service
               </button>
             `;
