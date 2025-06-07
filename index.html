@@ -77,10 +77,9 @@
   </style>
 </head>
 <body>
-
-  <!-- 🟩 Quote Form -->
   <div class="lookup-box">
     <h2>Instant Lawn Quote</h2>
+
     <input 
       type="search" 
       id="addressInput" 
@@ -89,21 +88,28 @@
       required 
       autocomplete="off" 
     />
+
     <button onclick="findPlace()" class="lookup-button">Find and Draw →</button>
+
     <div id="result"></div>
     <div id="map"></div>
   </div>
 
-  <!-- 📘 Tutorial Overlay -->
+  <!-- 📘 Tutorial Overlay (VISUAL STEPS + Video) -->
   <div id="tutorialOverlay">
     <h2 style="margin-bottom: 20px;">🎯 How to Get Your Instant Lawn Quote</h2>
-    <div style="max-width: 420px; display: flex; flex-direction: column; gap: 20px; font-size: 16px; line-height: 1.6; text-align: left;">
-      <div>🔲 <strong>Step 1:</strong> Tap the <strong>Polygon Tool</strong> at the top of the map.</div>
-      <div>📍 <strong>Step 2:</strong> Tap points around your lawn to draw the area.</div>
-      <div>✅ <strong>Step 3:</strong> Close the shape. You’ll get an instant square footage & price.</div>
-    </div>
+
+    <iframe width="100%" height="315"
+      src="https://www.youtube.com/embed/cNzmciDoQtk?autoplay=1&mute=1&rel=0"
+      title="How to Draw Your Lawn Area"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      style="border-radius: 10px; max-width: 560px;">
+    </iframe>
+
     <button onclick="hideTutorial()" style="margin-top: 30px; padding: 12px 20px; font-size: 16px; border-radius: 6px; background: #f4b400; color: black; border: none; font-weight: bold;">
-      Got it — Let's Start Drawing →
+      Got it — Don’t show this again →
     </button>
   </div>
 
@@ -149,9 +155,10 @@
           initDrawingManager();
           showTutorial();
 
-          document.getElementById("result").innerHTML = 
-            `📍 <strong>Address:</strong> ${results[0].formatted_address}<br><br>
-            ✅ <strong>Instructions:</strong> Use the polygon tool above the map to draw your lawn and get a quote.`;
+          document.getElementById("result").innerHTML = `
+            📍 <strong>Address:</strong> ${results[0].formatted_address}<br><br>
+            ✅ <strong>Instructions:</strong> Use the polygon tool above the map to draw your lawn and get a quote.
+          `;
         } else {
           document.getElementById("result").innerHTML = "❌ Geocoding failed. Try a different address.";
         }
@@ -183,31 +190,42 @@
         const ratePerSqFt = 0.005;
         const totalPrice = basePrice + areaSqFt * ratePerSqFt;
 
-        document.getElementById("result").innerHTML += 
-          `<div style="background: #fff9e6; padding: 12px; border-radius: 8px; border: 1px solid #f4b400; margin-top: 15px;">
+        document.getElementById("result").innerHTML += `
+          <div style="background: #fff9e6; padding: 12px; border-radius: 8px; border: 1px solid #f4b400; margin-top: 15px;">
             🧱 <strong>Lawn Size:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
             💵 <strong>Your Price:</strong> <span style="font-size: 18px; color: #27ae60;">$${totalPrice.toFixed(2)}</span><br><br>
             <button onclick="window.open('https://tampalawnpro.com/demo-3394', '_blank')"
                     style="background: #f4b400; color: #000; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
               ✅ Book This Lawn Service →
             </button>
-          </div>`;
+          </div>
+        `;
       });
     }
 
     function showTutorial() {
-      if (!sessionStorage.getItem("tutorialSeen")) {
-        document.getElementById("tutorialOverlay").style.display = "flex";
-        sessionStorage.setItem("tutorialSeen", "yes");
+      try {
+        const skipped = localStorage.getItem("tutorialDismissed");
+        if (!skipped || skipped !== "yes") {
+          document.getElementById("tutorialOverlay").style.display = "flex";
+        }
+      } catch (e) {
+        console.warn("Unable to access localStorage.", e);
       }
     }
 
     function hideTutorial() {
-      document.getElementById("tutorialOverlay").style.display = "none";
+      try {
+        localStorage.setItem("tutorialDismissed", "yes");
+        document.getElementById("tutorialOverlay").style.display = "none";
+      } catch (e) {
+        console.warn("Unable to access localStorage.", e);
+        document.getElementById("tutorialOverlay").style.display = "none";
+      }
     }
   </script>
 
-  <!-- ✅ Google Maps API -->
+  <!-- ✅ Load Google Maps API with drawing tools -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initAutocomplete">
   </script>
