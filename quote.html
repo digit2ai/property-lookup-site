@@ -63,7 +63,7 @@
   <div class="logo-container">
     <img src="https://assets.cdn.filesafe.space/SEMmeWOBlogS8eeis0N9/media/6844d3302c95c5e74ec2c7a6.png" alt="Logo" />
   </div>
-  <h2>Interactive Lawn Quote</h2>
+  <h2>Cotización instantánea en línea</h2>
 
   <div id="map"></div>
   <div id="result">🧭 Loading map...</div>
@@ -123,9 +123,9 @@
             const totalPrice = basePrice + areaSqFt * ratePerSqFt;
 
             document.getElementById("result").innerHTML = `
-              <strong>📍 Address:</strong> ${results[0].formatted_address}<br>
-              <strong>🧱 Lawn Size:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
-              <strong>💵 Estimated Price:</strong> $${totalPrice.toFixed(2)}<br><br>
+              <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
+              <strong>🧱 Tamaño:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
+              <strong>💵 Precio Estimado:</strong> $${totalPrice.toFixed(2)}<br><br>
               <button onclick="window.open('https://tampalawnpro.com/onboarding-demo-8560', '_blank')">
                 ✅ Book This Lawn Service
               </button>
