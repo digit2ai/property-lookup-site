@@ -8,13 +8,14 @@
     body {
       font-family: sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #064d2e; /* Dark green */
+      padding: 0;
+      background: #064d2e;
     }
 
     .logo-container {
       text-align: center;
-      margin: 0;
+      padding-top: 10px;
+      margin-bottom: 0;
     }
 
     .logo-container img {
@@ -28,8 +29,7 @@
       color: white;
       font-weight: bold;
       text-align: center;
-      margin-top: 0;
-      margin-bottom: 0;
+      margin: 4px 0 0 0;
     }
 
     #map {
@@ -40,7 +40,7 @@
     }
 
     #result {
-      margin-top: 20px;
+      margin: 20px;
       background: white;
       padding: 15px;
       border-radius: 10px;
@@ -60,13 +60,11 @@
 </head>
 <body>
 
-  <!-- Logo and Title -->
   <div class="logo-container">
     <img src="https://assets.cdn.filesafe.space/SEMmeWOBlogS8eeis0N9/media/6844d3302c95c5e74ec2c7a6.png" alt="Logo" />
   </div>
   <h2>Interactive Lawn Quote</h2>
 
-  <!-- Map and Quote Result -->
   <div id="map"></div>
   <div id="result">🧭 Loading map...</div>
 
@@ -101,8 +99,18 @@
             drawingControlOptions: {
               position: google.maps.ControlPosition.TOP_CENTER,
               drawingModes: ['polygon']
+            },
+            polygonOptions: {
+              strokeColor: "#FF0000",
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              fillColor: "#FF0000",
+              fillOpacity: 0.35,
+              editable: true,
+              draggable: false
             }
           });
+
           drawingManager.setMap(map);
 
           google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
