@@ -66,7 +66,7 @@
   <h2>Cotización instantánea en línea</h2>
 
   <div id="map"></div>
-  <div id="result">🧭 Loading map...</div>
+  <div id="result">🧭 Cargando el mapa...</div>
 
   <script>
     let map, drawingManager;
@@ -79,7 +79,7 @@
     function initMap() {
       const address = getQueryParam("address");
       if (!address) {
-        document.getElementById("result").innerText = "❌ Address not found.";
+        document.getElementById("result").innerText = "❌ Dirección no encontrada.";
         return;
       }
 
@@ -89,7 +89,7 @@
           const location = results[0].geometry.location;
           map = new google.maps.Map(document.getElementById("map"), {
             center: location,
-            zoom: 18,
+            zoom: 50,
             mapTypeId: 'hybrid'
           });
 
@@ -118,8 +118,8 @@
             const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
             const areaSqFt = areaMeters * 10.7639;
 
-            const basePrice = 40;
-            const ratePerSqFt = 0.005;
+            const basePrice = 50;
+            const ratePerSqFt = 0.010;
             const totalPrice = basePrice + areaSqFt * ratePerSqFt;
 
             document.getElementById("result").innerHTML = `
