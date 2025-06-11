@@ -118,11 +118,11 @@
             const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
             const areaSqFt = areaMeters * 10.7639;
 
-            const basePrice = 50;
-            const ratePerSqFt = 0.010;
+            const basePrice = 40;
+            const ratePerSqFt = 0.009;
             const totalPrice = basePrice + areaSqFt * ratePerSqFt;
 
-            const oneTimeRatePerSqFt = ratePerSqFt + 0.10;
+            const oneTimeRatePerSqFt = ratePerSqFt + 0.005;
             const oneTimePrice = basePrice + areaSqFt * oneTimeRatePerSqFt;
 
             document.getElementById("result").innerHTML = `
