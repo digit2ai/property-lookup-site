@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quote & Map</title>
+  <title>Cotización Instantánea</title>
   <style>
     body {
       font-family: sans-serif;
@@ -47,16 +47,6 @@
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
 
-    #frequency {
-      display: block;
-      margin: 10px auto;
-      font-size: 16px;
-      padding: 6px;
-      border-radius: 6px;
-      border: none;
-      font-weight: bold;
-    }
-
     button {
       background: #f4b400;
       color: black;
@@ -75,12 +65,6 @@
   </div>
   <h2>Cotización instantánea en línea</h2>
 
-  <select id="frequency">
-    <option value="one-time">Corte Único</option>
-    <option value="bi-weekly">Cada 2 Semanas</option>
-    <option value="monthly">Mensual</option>
-  </select>
-
   <div id="map"></div>
   <div id="result">🧭 Cargando el mapa...</div>
 
@@ -90,15 +74,6 @@
     function getQueryParam(key) {
       const params = new URLSearchParams(window.location.search);
       return params.get(key) || "";
-    }
-
-    function getRatePerSqFt(frequency) {
-      switch (frequency) {
-        case "one-time": return 0.007;
-        case "bi-weekly": return 0.0055;
-        case "monthly": return 0.006;
-        default: return 0.007;
-      }
     }
 
     function initMap() {
@@ -143,22 +118,27 @@
             const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
             const areaSqFt = areaMeters * 10.7639;
 
-            const frequency = document.getElementById("frequency").value;
             const basePrice = 40;
-            const ratePerSqFt = getRatePerSqFt(frequency);
-            const totalPrice = basePrice + areaSqFt * ratePerSqFt;
-
-            const frequencyLabel = {
-              "one-time": "Corte Único",
-              "bi-weekly": "Cada 2 Semanas",
-              "monthly": "Mensual"
+            const rates = {
+              "Corte Único": 0.007,
+              "Cada 2 Semanas": 0.0055,
+              "Mensual": 0.006
             };
+
+            const prices = Object.entries(rates).map(([label, rate]) => {
+              return {
+                label,
+                price: (basePrice + areaSqFt * rate).toFixed(2)
+              };
+            });
 
             document.getElementById("result").innerHTML = `
               <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
-              <strong>🧱 Tamaño:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
-              <strong>📅 Frecuencia:</strong> ${frequencyLabel[frequency]}<br>
-              <strong>💵 Precio Estimado:</strong> $${totalPrice.toFixed(2)}<br><br>
+              <strong>🧱 Tamaño:</strong> ${areaSqFt.toFixed(2)} sq ft<br><br>
+              ${prices.map(p => `
+                <strong>📅 Frecuencia:</strong> ${p.label}<br>
+                <strong>💵 Precio Estimado:</strong> $${p.price}<br><br>
+              `).join("")}
               <button onclick="window.open('https://tampalawnpro.com/onboarding-demo-8560', '_blank')">
                 ✅ Reservar este servicio
               </button>
@@ -178,4 +158,3 @@
   </script>
 </body>
 </html>
-  
