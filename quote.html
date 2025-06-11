@@ -122,10 +122,14 @@
             const ratePerSqFt = 0.010;
             const totalPrice = basePrice + areaSqFt * ratePerSqFt;
 
+            const oneTimeRatePerSqFt = ratePerSqFt + 0.10;
+            const oneTimePrice = basePrice + areaSqFt * oneTimeRatePerSqFt;
+
             document.getElementById("result").innerHTML = `
               <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
               <strong>🧱 Tamaño:</strong> ${areaSqFt.toFixed(2)} sq ft<br>
-              <strong>💵 Precio Estimado:</strong> $${totalPrice.toFixed(2)}<br><br>
+              <strong>💵 Precio Recurrente:</strong> $${totalPrice.toFixed(2)}<br>
+              <strong>💵 Precio Una Sola Vez:</strong> $${oneTimePrice.toFixed(2)}<br><br>
               <button onclick="window.open('https://tampalawnpro.com/onboarding-demo-8560', '_blank')">
                 ✅ Book This Lawn Service
               </button>
