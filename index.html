@@ -11,6 +11,10 @@
       background: #1a8f4d;
       margin: 0;
       padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
 
     .lookup-box {
@@ -18,8 +22,8 @@
       color: white;
       border-radius: 10px;
       padding: 20px;
-      max-width: 500px;
-      margin: 0 auto;
+      max-width: 640px;
+      width: 100%;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
@@ -42,48 +46,60 @@
       cursor: pointer;
       font-weight: bold;
     }
+
+    iframe {
+      width: 100%;
+      height: 700px;
+      border: none;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: block;
+    }
+
+    .centered {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
-  <div class="lookup-box">
-    <h2>Cotización Instantánea</h2>
+  <div class="lookup-box centered">
+    <h2 style="text-align: center;">Cotización Instantánea</h2>
 
     <input
       type="search"
       id="addressInput"
       class="lookup-input"
       placeholder="1234 Main Street, City, State"
-      required
       autocomplete="off"
     />
 
-    <button onclick="handleFormAndMap()" class="lookup-button">Busca y Dibuja →</button>
+    <button onclick="loadForm()" class="lookup-button">Empieza →</button>
 
-    <div id="result"></div>
+    <div id="iframeSection" style="display:none; width: 100%;">
+      <iframe id="contentFrame" src=""></iframe>
+      <button onclick="loadQuote()" class="lookup-button">Continuar al Mapa →</button>
+    </div>
   </div>
 
   <script>
-    function handleFormAndMap() {
+    function loadForm() {
       const address = document.getElementById("addressInput").value.trim();
       if (!address) {
         alert("❌ Por favor, ingresa una dirección válida.");
         return;
       }
 
-      const encodedAddress = encodeURIComponent(address);
-      const formUrl = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
-      const quoteUrl = `quote.html?address=${encodedAddress}`;
+      window.sessionStorage.setItem("userAddress", address);
+      document.getElementById("contentFrame").src = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
+      document.getElementById("iframeSection").style.display = "block";
+    }
 
-      // Open the GHL form in a popup
-      const formWindow = window.open(formUrl, "_blank", "width=600,height=800");
-
-      // Wait until the form popup is closed, then open the quote.html in a new tab
-      const poll = setInterval(() => {
-        if (formWindow.closed) {
-          clearInterval(poll);
-          window.open(quoteUrl, "_blank"); // Open map in a NEW window/tab
-        }
-      }, 1000);
+    function loadQuote() {
+      const address = window.sessionStorage.getItem("userAddress") || "";
+      const encoded = encodeURIComponent(address);
+      document.getElementById("contentFrame").src = `quote.html?address=${encoded}`;
     }
 
     function initAutocomplete() {
@@ -95,7 +111,7 @@
     }
   </script>
 
-  <!-- Google Maps Places API -->
+  <!-- Google Places API -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
   </script>
