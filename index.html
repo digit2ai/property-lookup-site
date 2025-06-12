@@ -42,11 +42,6 @@
       cursor: pointer;
       font-weight: bold;
     }
-
-    #extraForm {
-      display: none;
-      margin-top: 20px;
-    }
   </style>
 </head>
 <body>
@@ -62,49 +57,34 @@
       autocomplete="off"
     />
 
-    <button onclick="showExtraForm()" class="lookup-button">Busca y Dibuja →</button>
-
-    <div id="extraForm">
-      <input type="text" id="fullName" class="lookup-input" placeholder="Nombre Completo" required>
-      <input type="tel" id="phone" class="lookup-input" placeholder="Teléfono" required>
-      <input type="email" id="email" class="lookup-input" placeholder="Correo Electrónico" required>
-      <button onclick="openQuoteWindow()" class="lookup-button">Continuar →</button>
-    </div>
+    <button onclick="handleFormAndMap()" class="lookup-button">Busca y Dibuja →</button>
 
     <div id="result"></div>
   </div>
 
   <script>
-    let selectedPlaceId = null;
-
-    function showExtraForm() {
+    function handleFormAndMap() {
       const address = document.getElementById("addressInput").value.trim();
       if (!address) {
         alert("❌ Por favor, ingresa una dirección válida.");
         return;
       }
-      document.getElementById("extraForm").style.display = "block";
-    }
 
-    function openQuoteWindow() {
-      const address = document.getElementById("addressInput").value.trim();
-      const name = document.getElementById("fullName").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const email = document.getElementById("email").value.trim();
+      const encoded = encodeURIComponent(address);
+      const mapUrl = `quote.html?address=${encoded}`;
+      const formUrl = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
 
-      if (!name || !phone || !email) {
-        alert("❌ Por favor, completa todos los campos.");
-        return;
-      }
+      // Open the form in a new popup window
+      const formWindow = window.open(formUrl, "_blank", "width=600,height=800");
 
-      const params = new URLSearchParams({
-        address,
-        name,
-        phone,
-        email
-      });
-
-      window.open(`quote.html?${params.toString()}`, '_blank');
+      // Start checking every 1 second whether the form window is closed
+      const poll = setInterval(() => {
+        if (formWindow.closed) {
+          clearInterval(poll);
+          // Now open the map
+          window.open(mapUrl, "_blank");
+        }
+      }, 1000);
     }
 
     function initAutocomplete() {
@@ -113,17 +93,10 @@
         types: ['address'],
         componentRestrictions: { country: "us" }
       });
-
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        if (place.place_id) {
-          selectedPlaceId = place.place_id;
-        }
-      });
     }
   </script>
 
-  <!-- Google Maps Places API -->
+  <!-- Google Maps API for Autocomplete -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
   </script>
