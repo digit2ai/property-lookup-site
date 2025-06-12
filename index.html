@@ -70,19 +70,18 @@
         return;
       }
 
-      const encoded = encodeURIComponent(address);
-      const mapUrl = `quote.html?address=${encoded}`;
+      const encodedAddress = encodeURIComponent(address);
       const formUrl = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
 
-      // Open the form in a new popup window
+      // Open the form in a popup
       const formWindow = window.open(formUrl, "_blank", "width=600,height=800");
 
-      // Start checking every 1 second whether the form window is closed
+      // Check every second if the form window is closed
       const poll = setInterval(() => {
         if (formWindow.closed) {
           clearInterval(poll);
-          // Now open the map
-          window.open(mapUrl, "_blank");
+          // Redirect the current (original) tab to quote.html
+          window.location.href = `quote.html?address=${encodedAddress}`;
         }
       }, 1000);
     }
@@ -96,7 +95,7 @@
     }
   </script>
 
-  <!-- Google Maps API for Autocomplete -->
+  <!-- Google Maps Places API -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
   </script>
