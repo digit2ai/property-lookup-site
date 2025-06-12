@@ -72,16 +72,16 @@
 
       const encodedAddress = encodeURIComponent(address);
       const formUrl = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
+      const quoteUrl = `quote.html?address=${encodedAddress}`;
 
-      // Open the form in a popup
+      // Open the GHL form in a popup
       const formWindow = window.open(formUrl, "_blank", "width=600,height=800");
 
-      // Check every second if the form window is closed
+      // Wait until the form popup is closed, then open the quote.html in a new tab
       const poll = setInterval(() => {
         if (formWindow.closed) {
           clearInterval(poll);
-          // Redirect the current (original) tab to quote.html
-          window.location.href = `quote.html?address=${encodedAddress}`;
+          window.open(quoteUrl, "_blank"); // Open map in a NEW window/tab
         }
       }, 1000);
     }
