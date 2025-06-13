@@ -1,135 +1,119 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotización Instantánea</title>
+  <title>Instant Lawn Quote</title>
+  <meta name="theme-color" content="#343434">
   <style>
     body {
       font-family: sans-serif;
+      background: #1a8f4d;
       margin: 0;
-      padding: 0;
-      background: #064d2e;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
 
-    #map {
+    .lookup-box {
+      background: #2b2b2b;
+      color: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 640px;
       width: 100%;
-      height: 500px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .lookup-input, .lookup-button {
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      padding: 12px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .lookup-input {
+      color: #333;
+    }
+
+    .lookup-button {
+      background-color: #f4b400;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    iframe {
+      width: 100%;
+      height: 700px;
+      border: none;
       border-radius: 10px;
       margin-top: 20px;
+      display: block;
     }
 
-    #result {
-      margin: 20px;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-
-    button {
-      background: #f4b400;
-      color: black;
-      padding: 10px 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    .centered {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
   </style>
 </head>
 <body>
+  <div class="lookup-box centered">
+    <h2 style="text-align: center;">Cotización Instantánea</h2>
 
-  <div id="map"></div>
-  <div id="result">🧭 Cargando el mapa...</div>
+    <input
+      type="search"
+      id="addressInput"
+      class="lookup-input"
+      placeholder="1234 Main Street, City, State"
+      autocomplete="off"
+    />
+
+    <button onclick="loadForm()" class="lookup-button">Empieza →</button>
+
+    <div id="iframeSection" style="display:none; width: 100%;">
+      <iframe id="contentFrame" src=""></iframe>
+      <button onclick="loadQuote()" class="lookup-button">Continuar al Mapa →</button>
+    </div>
+  </div>
 
   <script>
-    let map, drawingManager;
-
-    function getQueryParam(key) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(key) || "";
-    }
-
-    function initMap() {
-      const address = getQueryParam("address");
+    function loadForm() {
+      const address = document.getElementById("addressInput").value.trim();
       if (!address) {
-        document.getElementById("result").innerText = "❌ Dirección no encontrada.";
+        alert("❌ Por favor, ingresa una dirección válida.");
         return;
       }
 
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ address }, (results, status) => {
-        if (status === "OK" && results[0]) {
-          const location = results[0].geometry.location;
-          map = new google.maps.Map(document.getElementById("map"), {
-            center: location,
-            zoom: 20,
-            mapTypeId: 'hybrid'
-          });
+      window.sessionStorage.setItem("userAddress", address);
+      document.getElementById("contentFrame").src = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
+      document.getElementById("iframeSection").style.display = "block";
+    }
 
-          drawingManager = new google.maps.drawing.DrawingManager({
-            drawingMode: null,
-            drawingControl: true,
-            drawingControlOptions: {
-              position: google.maps.ControlPosition.TOP_CENTER,
-              drawingModes: ['polygon']
-            },
-            polygonOptions: {
-              strokeColor: "#FF0000",
-              strokeOpacity: 0.8,
-              strokeWeight: 2,
-              fillColor: "#FF0000",
-              fillOpacity: 0.35,
-              editable: true,
-              draggable: false
-            }
-          });
+    function loadQuote() {
+      const address = window.sessionStorage.getItem("userAddress") || "";
+      const encoded = encodeURIComponent(address);
+      document.getElementById("contentFrame").src = `quote.html?address=${encoded}`;
+    }
 
-          drawingManager.setMap(map);
-
-          google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
-            const polygon = event.overlay;
-            const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
-            const areaSqFt = areaMeters * 10.7639;
-
-            const basePrice = 40;
-            const rates = {
-              "Corte Único": 0.00037,
-              "Cada 2 Semanas": 0.0040,
-              "Semanal": 0.009
-            };
-
-            const prices = Object.entries(rates).map(([label, rate]) => {
-              return {
-                label,
-                price: (basePrice + areaSqFt * rate).toFixed(2)
-              };
-            });
-
-            document.getElementById("result").innerHTML = `
-              <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
-              <strong>🧱 Tamaño:</strong> ${areaSqFt.toFixed(2)} sq ft<br><br>
-              ${prices.map(p => `
-                <strong>📅 Frecuencia:</strong> ${p.label}<br>
-                <strong>💵 Precio Estimado Mensual:</strong> $${p.price}<br><br>
-              `).join("")}
-              <button onclick="window.open('https://buy.stripe.com/bJe8wP4E91MCeBh2UMa3u00', '_blank')">
-                ✅ Reservar este servicio
-              </button>
-            `;
-          });
-
-          document.getElementById("result").innerHTML = "✅ Usa la herramienta de polígono para dibujar tu césped";
-        } else {
-          document.getElementById("result").innerText = "❌ Geocoding failed.";
-        }
+    function initAutocomplete() {
+      const input = document.getElementById("addressInput");
+      const autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['address'],
+        componentRestrictions: { country: "us" }
       });
     }
   </script>
 
+  <!-- Google Places API -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
   </script>
 </body>
 </html>
