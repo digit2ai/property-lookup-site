@@ -13,8 +13,8 @@
     }
 
     .container {
-      max-width: 720px;
-      margin: 20px auto;
+      max-width: 700px;
+      margin: 30px auto;
       text-align: center;
       padding: 0 20px;
     }
@@ -64,7 +64,7 @@
 
   <div class="container">
     <h2>Cotización Instantánea</h2>
-    <input type="text" id="addressInput" placeholder="10013 Cypress Shadow Avenue, Tampa, FL, USA">
+    <input type="text" id="addressInput" placeholder="Ingresa tu dirección aquí">
     <button onclick="loadForm()">Empieza →</button>
   </div>
 
@@ -73,7 +73,7 @@
       id="contentFrame"
       src=""
       allowtransparency="true"
-      title="Formulario de Contacto"
+      title="Formulario GHL"
       loading="lazy">
     </iframe>
   </div>
@@ -89,8 +89,8 @@
       }
 
       sessionStorage.setItem("userAddress", address);
-      const frame = document.getElementById("contentFrame");
-      frame.src = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
+      document.getElementById("contentFrame").src =
+        "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
     }
 
     function watchForThankYouMessage() {
@@ -110,16 +110,14 @@
             window.open(`quote.html?address=${addr}`, "_blank");
           }
         } catch (e) {
-          // Cross-origin protection (ignore until it's ready)
+          // Ignore while iframe loads
         }
       };
 
       setInterval(checkMessage, 1000);
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      watchForThankYouMessage();
-    });
+    window.addEventListener("DOMContentLoaded", watchForThankYouMessage);
   </script>
 
 </body>
