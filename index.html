@@ -75,7 +75,6 @@
 
     sessionStorage.setItem("userAddress", address);
 
-    // Show GHL form
     document.getElementById("step2").style.display = "block";
     document.getElementById("formFrame").src =
       "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
@@ -89,17 +88,22 @@
     const timer = setInterval(() => {
       try {
         const doc = frame.contentDocument || frame.contentWindow.document;
-        const text = (doc.body.textContent || '').toLowerCase();
-        console.log("FORM TEXT:", text);
+        const bodyText = doc.body?.innerText.toLowerCase() || "";
+        const matchThankYou = /thank\s*you|gracias/.test(bodyText);
 
-        if (!quoteOpened && text.match(/thank\s*you/i)) {
+        if (!quoteOpened && matchThankYou) {
           quoteOpened = true;
           clearInterval(timer);
 
-          const addr = encodeURIComponent(sessionStorage.getItem('userAddress') || '');
-          window.open(`quote.html?address=${addr}`, '_blank');
+          // Use animation frame to increase success rate with popup blockers
+          requestAnimationFrame(() => {
+            const addr = encodeURIComponent(sessionStorage.getItem('userAddress') || '');
+            window.open(`quote.html?address=${addr}`, '_blank');
+          });
         }
-      } catch {}
+      } catch {
+        // Try again on next tick
+      }
     }, 1000);
   }
 
@@ -111,6 +115,7 @@
     });
   }
 </script>
+
 
 <!-- Google Places Autocomplete -->
 <script async
