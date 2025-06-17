@@ -4,37 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cotización Instantánea</title>
+
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #064d2e;
+    body{
+      font-family:sans-serif;
+      margin:0;
+      padding:0;
+      background:#064d2e;
+      color:#fff;
     }
-
-    #map {
-      width: 100%;
-      height: 500px;
-      border-radius: 10px;
-      margin-top: 20px;
+    #map{
+      width:100%;
+      height:500px;
+      border-radius:10px;
+      margin-top:20px;
     }
-
-    #result {
-      margin: 20px;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    #result{
+      margin:20px;
+      background:#fff;
+      color:#000;
+      padding:15px;
+      border-radius:10px;
+      box-shadow:0 0 8px rgba(0,0,0,.1);
     }
-
-    button {
-      background: #f4b400;
-      color: black;
-      padding: 10px 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    button{
+      background:#f4b400;
+      color:#000;
+      padding:10px 16px;
+      font-weight:bold;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
     }
   </style>
 </head>
@@ -44,92 +44,110 @@
   <div id="result">🧭 Cargando el mapa...</div>
 
   <script>
-    let map, drawingManager;
-
-    function getQueryParam(key) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(key) || "";
+    /* -----------------------------------------------------------
+       Helpers
+    ----------------------------------------------------------- */
+    function getQueryParam(key){
+      return new URLSearchParams(location.search).get(key) || "";
+    }
+    function getStoredAddress(){
+      return sessionStorage.getItem("userAddress") || "";
     }
 
-    function initMap() {
-      const address = getQueryParam("address");
-      if (!address) {
-        document.getElementById("result").innerText = "❌ Dirección no encontrada.";
+    /* -----------------------------------------------------------
+       Google Maps initialisation
+    ----------------------------------------------------------- */
+    let map, drawingManager;
+
+    function initMap(){
+      // 1️⃣ try sessionStorage first, 2️⃣ fallback to ?address=
+      const address = getStoredAddress() || getQueryParam("address");
+      if(!address){
+        document.getElementById("result").innerText =
+          "❌ No se encontró la dirección.";
         return;
       }
 
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ address }, (results, status) => {
-        if (status === "OK" && results[0]) {
+        if(status==="OK" && results[0]){
           const location = results[0].geometry.location;
-          map = new google.maps.Map(document.getElementById("map"), {
-            center: location,
-            zoom: 20,
-            mapTypeId: 'hybrid'
+
+          /* --- Map --- */
+          map = new google.maps.Map(document.getElementById("map"),{
+            center:location,
+            zoom:20,
+            mapTypeId:'hybrid'
           });
 
+          /* --- Drawing Manager --- */
           drawingManager = new google.maps.drawing.DrawingManager({
-            drawingMode: null,
-            drawingControl: true,
-            drawingControlOptions: {
-              position: google.maps.ControlPosition.TOP_CENTER,
-              drawingModes: ['polygon']
+            drawingControl:true,
+            drawingControlOptions:{
+              position:google.maps.ControlPosition.TOP_CENTER,
+              drawingModes:['polygon']
             },
-            polygonOptions: {
-              strokeColor: "#FF0000",
-              strokeOpacity: 0.8,
-              strokeWeight: 2,
-              fillColor: "#FF0000",
-              fillOpacity: 0.35,
-              editable: true,
-              draggable: false
+            polygonOptions:{
+              strokeColor:"#FF0000",
+              strokeOpacity:.8,
+              strokeWeight:2,
+              fillColor:"#FF0000",
+              fillOpacity:.35,
+              editable:true
             }
           });
-
           drawingManager.setMap(map);
 
-          google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
-            const polygon = event.overlay;
-            const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
-            const areaSqFt = areaMeters * 10.7639;
+          /* --- When the user draws a polygon --- */
+          google.maps.event.addListener(
+            drawingManager,
+            "overlaycomplete",
+            ({ overlay }) => {
+              const areaM2   = google.maps.geometry.spherical.computeArea(
+                                  overlay.getPath());
+              const areaFt2  = areaM2 * 10.7639;
 
-            const basePrice = 40;
-            const rates = {
-              "Corte Único": 0.00037,
-              "Cada 2 Semanas": 0.0040,
-              "Semanal": 0.009
-            };
-
-            const prices = Object.entries(rates).map(([label, rate]) => {
-              return {
-                label,
-                price: (basePrice + areaSqFt * rate).toFixed(2)
+              /* Pricing */
+              const basePrice = 40;
+              const rates = {
+                "Corte Único":         0.00037,
+                "Cada 2 Semanas":      0.0040,
+                "Semanal":             0.009
               };
+              const prices = Object.entries(rates).map(([label, r])=>({
+                label,
+                price:(basePrice + areaFt2*r).toFixed(2)
+              }));
+
+              document.getElementById("result").innerHTML = `
+                <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
+                <strong>🧱 Tamaño:</strong> ${areaFt2.toFixed(2)}&nbsp;sq&nbsp;ft<br><br>
+                ${prices.map(p=>`
+                  <strong>📅 Frecuencia:</strong> ${p.label}<br>
+                  <strong>💵 Precio Estimado Mensual:</strong> $${p.price}<br><br>
+                `).join("")}
+                <button onclick="window.open(
+                  'https://buy.stripe.com/bJe8wP4E91MCeBh2UMa3u00','_blank')">
+                  ✅ Reservar este servicio
+                </button>
+              `;
             });
 
-            document.getElementById("result").innerHTML = `
-              <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
-              <strong>🧱 Tamaño:</strong> ${areaSqFt.toFixed(2)} sq ft<br><br>
-              ${prices.map(p => `
-                <strong>📅 Frecuencia:</strong> ${p.label}<br>
-                <strong>💵 Precio Estimado Mensual:</strong> $${p.price}<br><br>
-              `).join("")}
-              <button onclick="window.open('https://buy.stripe.com/bJe8wP4E91MCeBh2UMa3u00', '_blank')">
-                ✅ Reservar este servicio
-              </button>
-            `;
-          });
+          document.getElementById("result").innerHTML =
+            "✅ Usa la herramienta de polígono para dibujar tu césped.";
 
-          document.getElementById("result").innerHTML = "✅ Usa la herramienta de polígono para dibujar tu césped";
-        } else {
-          document.getElementById("result").innerText = "❌ Geocoding failed.";
+        }else{
+          document.getElementById("result").innerText =
+            "❌ No se pudo geocodificar la dirección.";
         }
       });
     }
   </script>
 
+  <!-- Google Maps with Places + Geometry + Drawing libraries -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places,geometry,drawing&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg
+      &libraries=places,geometry,drawing&callback=initMap">
   </script>
 </body>
 </html>
