@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotización Instantánea</title>
+  <title>Instant Quote</title>
   <style>
     :root{
       --brand-yellow:#f4b400;
@@ -80,15 +80,15 @@
     <!-- logo -->
     <img class="logo" src="https://assets.cdn.filesafe.space/SEMmeWOBlogS8eeis0N9/media/6851d1b49e75a869457b70b8.png" alt="LawnPro logo">
 
-    <h2>1️⃣ Ingresa tu dirección</h2>
+    <h2>1️⃣ Enter your address</h2>
 
-    <input type="text" id="addressInput" placeholder="Escribe tu dirección aquí…" />
+    <input type="text" id="addressInput" placeholder="Type your address here…" />
 
-    <button onclick="startStep2()">Continuar →</button>
+    <button onclick="startStep2()">Continue →</button>
 
     <div id="step2" class="iframe-wrapper">
-      <h2>2️⃣ Completa tus datos</h2>
-      <iframe id="formFrame" title="Formulario de Contacto"></iframe>
+      <h2>2️⃣ Complete your information</h2>
+      <iframe id="formFrame" title="Contact Form"></iframe>
     </div>
   </div>
 
@@ -98,7 +98,7 @@
   function startStep2(){
     const address=document.getElementById("addressInput").value.trim();
     if(!address){
-      alert("❌ Por favor, ingresa una dirección válida.");
+      alert("❌ Please enter a valid address.");
       return;
     }
     sessionStorage.setItem("userAddress",address);
