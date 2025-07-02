@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotización Instantánea</title>
+  <title>Instant Quote</title>
 
   <style>
     body{
@@ -41,7 +41,7 @@
 <body>
 
   <div id="map"></div>
-  <div id="result">🧭 Cargando el mapa...</div>
+  <div id="result">🧭 Loading the map...</div>
 
   <script>
     /* -----------------------------------------------------------
@@ -64,7 +64,7 @@
       const address = getStoredAddress() || getQueryParam("address");
       if(!address){
         document.getElementById("result").innerText =
-          "❌ No se encontró la dirección.";
+          "❌ Address not found.";
         return;
       }
 
@@ -110,9 +110,9 @@
               /* Pricing */
               const basePrice = 40;
               const rates = {
-                "Corte Único":         0.00040,
-                "Cada 2 Semanas":      0.00050,
-                "Semanal":             0.010
+                "One-time Cut":       0.00040,
+                "Every 2 Weeks":      0.00050,
+                "Weekly":             0.010
               };
               const prices = Object.entries(rates).map(([label, r])=>({
                 label,
@@ -120,25 +120,25 @@
               }));
 
               document.getElementById("result").innerHTML = `
-                <strong>📍 Dirección:</strong> ${results[0].formatted_address}<br>
-                <strong>🧱 Tamaño:</strong> ${areaFt2.toFixed(2)}&nbsp;sq&nbsp;ft<br><br>
+                <strong>📍 Address:</strong> ${results[0].formatted_address}<br>
+                <strong>🧱 Size:</strong> ${areaFt2.toFixed(2)}&nbsp;sq&nbsp;ft<br><br>
                 ${prices.map(p=>`
-                  <strong>📅 Frecuencia:</strong> ${p.label}<br>
-                  <strong>💵 Precio Estimado Mensual:</strong> $${p.price}<br><br>
+                  <strong>📅 Frequency:</strong> ${p.label}<br>
+                  <strong>💵 Estimated Monthly Price:</strong> $${p.price}<br><br>
                 `).join("")}
                 <button onclick="window.open(
                   'https://buy.stripe.com/bJe8wP4E91MCeBh2UMa3u00','_blank')">
-                  ✅ Reservar este servicio
+                  ✅ Book this service
                 </button>
               `;
             });
 
           document.getElementById("result").innerHTML =
-            "✅ Usa la herramienta de polígono para dibujar tu césped.";
+            "✅ Use the polygon tool to draw your lawn.";
 
         }else{
           document.getElementById("result").innerText =
-            "❌ No se pudo geocodificar la dirección.";
+            "❌ Could not geocode the address.";
         }
       });
     }
