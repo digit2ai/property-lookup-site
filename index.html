@@ -27,12 +27,17 @@
       text-align:center;
     }
 
-    /* logo */
     .logo{
       max-width:300px;
       height:auto;
       display:block;
       margin:0 auto 16px;
+    }
+
+    video.promo-video {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
     }
 
     h2{
@@ -80,6 +85,13 @@
     <!-- logo -->
     <img class="logo" src="https://assets.cdn.filesafe.space/SEMmeWOBlogS8eeis0N9/media/6851d1b49e75a869457b70b8.png" alt="LawnPro logo">
 
+    <!-- video -->
+    <video class="promo-video" controls autoplay muted playsinline>
+      <source src="https://storage.googleapis.com/msgsndr/SEMmeWOBlogS8eeis0N9/media/6848a2d87906f1878722e4e4.mp4
+" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+
     <h2>1️⃣ Enter your address</h2>
 
     <input type="text" id="addressInput" placeholder="Type your address here…" />
@@ -115,7 +127,7 @@
       try{
         const doc=frame.contentDocument||frame.contentWindow.document;
         const bodyText=(doc.body?.innerText||"").toLowerCase();
-        if(!quoteOpened && /thank\\s*you|gracias/.test(bodyText)){
+        if(!quoteOpened && /thank\s*you|gracias/.test(bodyText)){
           quoteOpened=true;
           clearInterval(timer);
           requestAnimationFrame(()=>{
@@ -135,10 +147,8 @@
   }
 </script>
 
-<!-- Google Places Autocomplete -->
 <script async
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
 </script>
 </body>
 </html>
-
