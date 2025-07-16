@@ -5,33 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Instant Quote</title>
   <style>
-    :root{
-      --brand-yellow:#f4b400;
-      --bg-dark-green:#064d2e;
+    :root {
+      --brand-yellow: #f4b400;
+      --bg-dark-green: #064d2e;
     }
-    *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;}
-
-    body{
-      background:var(--bg-dark-green);
-      color:#fff;
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      min-height:100vh;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
     }
 
-    .container{
-      width:100%;
-      max-width:700px;
-      padding:20px;
-      text-align:center;
+    body {
+      background: var(--bg-dark-green);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
 
-    .logo{
-      max-width:300px;
-      height:auto;
-      display:block;
-      margin:0 auto 4px;
+    .container {
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .logo {
+      max-width: 300px;
+      height: auto;
+      display: block;
+      margin: 0 auto 4px;
+    }
+
+    .video-title {
+      font-size: 1.6rem;
+      color: white;
+      font-weight: bold;
+      margin: 10px 0 8px;
     }
 
     video.promo-video {
@@ -41,42 +53,42 @@
       margin-bottom: 20px;
     }
 
-    h2{
-      font-size:1.3rem;
-      margin-bottom:18px;
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 18px;
     }
 
     input[type="text"],
-    button{
-      width:100%;
-      padding:14px;
-      font-size:16px;
-      border:none;
-      border-radius:8px;
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
     }
 
-    input[type="text"]{
-      margin-bottom:12px;
+    input[type="text"] {
+      margin-bottom: 12px;
     }
 
-    button{
-      font-weight:700;
-      background:var(--brand-yellow);
-      color:#000;
-      cursor:pointer;
+    button {
+      font-weight: 700;
+      background: var(--brand-yellow);
+      color: #000;
+      cursor: pointer;
     }
 
-    .iframe-wrapper{
-      margin-top:28px;
-      display:none;
+    .iframe-wrapper {
+      margin-top: 28px;
+      display: none;
     }
 
-    iframe{
-      width:100%;
-      height:800px;
-      border:none;
-      border-radius:14px;
-      background:transparent;
+    iframe {
+      width: 100%;
+      height: 800px;
+      border: none;
+      border-radius: 14px;
+      background: transparent;
     }
   </style>
 </head>
@@ -86,69 +98,74 @@
     <!-- logo -->
     <img class="logo" src="https://assets.cdn.filesafe.space/SEMmeWOBlogS8eeis0N9/media/6851d1b49e75a869457b70b8.png" alt="LawnPro logo">
 
+    <!-- title above video -->
+    <h1 class="video-title">Instant Quote Generator</h1>
+
     <!-- video -->
     <video class="promo-video" controls autoplay muted playsinline>
       <source src="https://storage.googleapis.com/msgsndr/SEMmeWOBlogS8eeis0N9/media/68436e0cae3bbdab95cae4b0.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
 
+    <!-- address input -->
     <h2>1️⃣ Enter your address</h2>
-
     <input type="text" id="addressInput" placeholder="Type your address here…" />
-
     <button onclick="startStep2()">Continue →</button>
 
+    <!-- step 2 -->
     <div id="step2" class="iframe-wrapper">
       <h2>2️⃣ Complete your information</h2>
       <iframe id="formFrame" title="Contact Form"></iframe>
     </div>
   </div>
 
-<script>
-  let quoteOpened=false;
+  <script>
+    let quoteOpened = false;
 
-  function startStep2(){
-    const address=document.getElementById("addressInput").value.trim();
-    if(!address){
-      alert("❌ Please enter a valid address.");
-      return;
+    function startStep2() {
+      const address = document.getElementById("addressInput").value.trim();
+      if (!address) {
+        alert("❌ Please enter a valid address.");
+        return;
+      }
+      sessionStorage.setItem("userAddress", address);
+
+      const step2 = document.getElementById("step2");
+      const frame = document.getElementById("formFrame");
+      step2.style.display = "block";
+      frame.src = "https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
+      watchThankYou(frame);
     }
-    sessionStorage.setItem("userAddress",address);
 
-    const step2=document.getElementById("step2");
-    const frame=document.getElementById("formFrame");
-    step2.style.display="block";
-    frame.src="https://api.leadconnectorhq.com/widget/form/M1VjpXSx2cIFN2ghPme6";
-    watchThankYou(frame);
-  }
-
-  function watchThankYou(frame){
-    const timer=setInterval(()=>{
-      try{
-        const doc=frame.contentDocument||frame.contentWindow.document;
-        const bodyText=(doc.body?.innerText||"").toLowerCase();
-        if(!quoteOpened && /thank\s*you|gracias/.test(bodyText)){
-          quoteOpened=true;
-          clearInterval(timer);
-          requestAnimationFrame(()=>{
-            const addr=encodeURIComponent(sessionStorage.getItem("userAddress")||"");
-            window.open(`quote.html?address=${addr}`,'_blank');
-          });
+    function watchThankYou(frame) {
+      const timer = setInterval(() => {
+        try {
+          const doc = frame.contentDocument || frame.contentWindow.document;
+          const bodyText = (doc.body?.innerText || "").toLowerCase();
+          if (!quoteOpened && /thank\s*you|gracias/.test(bodyText)) {
+            quoteOpened = true;
+            clearInterval(timer);
+            requestAnimationFrame(() => {
+              const addr = encodeURIComponent(sessionStorage.getItem("userAddress") || "");
+              window.open(`quote.html?address=${addr}`, '_blank');
+            });
+          }
+        } catch {
+          // cross-origin, just keep polling
         }
-      }catch{/* cross-origin, just keep polling */}
-    },1000);
-  }
+      }, 1000);
+    }
 
-  function initAutocomplete(){
-    new google.maps.places.Autocomplete(
-      document.getElementById("addressInput"),
-      {types:["address"],componentRestrictions:{country:"us"}}
-    );
-  }
-</script>
+    function initAutocomplete() {
+      new google.maps.places.Autocomplete(
+        document.getElementById("addressInput"),
+        { types: ["address"], componentRestrictions: { country: "us" } }
+      );
+    }
+  </script>
 
-<script async
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
-</script>
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3EJTm3D0afQzZebyLovtODu0DXGlQAPg&libraries=places&callback=initAutocomplete">
+  </script>
 </body>
 </html>
